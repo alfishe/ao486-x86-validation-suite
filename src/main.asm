@@ -178,6 +178,10 @@ print_fpu_name:
 %include "cpu/80186/new_insns.asm"
 %include "cpu/80186/enhanced.asm"
 
+; --- 80286+ tests ---
+%include "cpu/80286/real.asm"
+%include "cpu/80286/protected.asm"
+
 ;============================================================================
 ; GLOBAL DATA
 ;============================================================================
