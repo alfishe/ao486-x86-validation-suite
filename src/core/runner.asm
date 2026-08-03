@@ -184,4 +184,5 @@ test_module_table:
     dw fpu_cs_run, fpu_cs_init, fpu_cs_cleanup, fpu_cs_name
     dw fpu_trans_run, fpu_trans_init, fpu_trans_cleanup, fpu_trans_name
     dw fpu_misc_run, fpu_misc_init, fpu_misc_cleanup, fpu_misc_name
+    dw fpu_extra_run, fpu_extra_init, fpu_extra_cleanup, fpu_extra_name
     dw 0                               ; end sentinel
