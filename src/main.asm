@@ -174,6 +174,10 @@ print_fpu_name:
 %include "cpu/8086/bcd.asm"
 %include "cpu/8086/control.asm"
 
+; --- 80186+ tests ---
+%include "cpu/80186/new_insns.asm"
+%include "cpu/80186/enhanced.asm"
+
 ;============================================================================
 ; GLOBAL DATA
 ;============================================================================
