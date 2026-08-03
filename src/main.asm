@@ -173,6 +173,8 @@ print_fpu_name:
 %include "cpu/8086/stack.asm"
 %include "cpu/8086/bcd.asm"
 %include "cpu/8086/control.asm"
+%include "cpu/8086/transfer.asm"
+%include "cpu/8086/multiply.asm"
 
 ; --- 80186+ tests ---
 %include "cpu/80186/new_insns.asm"

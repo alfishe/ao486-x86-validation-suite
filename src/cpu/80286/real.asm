@@ -161,6 +161,98 @@ real286_run:
     test    ax, 0x4000                  ; NT bit
     jnz     .fail                       ; NT should be 0 at startup
 
+    ; ========================================================================
+    ; TEST 10: LMSW — set TS bit via LMSW, verify via SMSW
+    ; LMSW loads a new value into MSW (CR0[15:0]).
+    ; We set TS (bit 3) only, preserving PE=0 and other bits.
+    ; Ref: iAPX286 PRM §2.3 — LMSW available in real mode
+    ; ========================================================================
+    smsw    ax                          ; read current MSW
+    mov     [rm286_saved_msw], ax       ; save it
+    or      ax, 0x0008                  ; set TS bit (bit 3)
+    lmsw    ax                          ; write back with TS=1
+    smsw    ax                          ; re-read
+    test    ax, 0x0008                  ; TS must be 1 now
+    jz      .fail
+    ; Restore: clear TS
+    and     ax, 0xFFF7                  ; clear TS bit
+    lmsw    ax
+    smsw    ax
+    test    ax, 0x0008                  ; TS must be 0 again
+    jnz     .fail
+
+    ; ========================================================================
+    ; TEST 11: CLTS — clear task-switched flag
+    ; CLTS clears the TS bit in MSW/CR0. Available at CPL0 (real mode = CPL0).
+    ; Set TS via LMSW, then CLTS should clear it.
+    ; Ref: iAPX286 PRM §2.3.1 — CLTS instruction
+    ; ========================================================================
+    smsw    ax
+    or      ax, 0x0008                  ; set TS
+    lmsw    ax
+    smsw    ax
+    test    ax, 0x0008                  ; confirm TS is set
+    jz      .fail
+    clts                                ; clear TS
+    smsw    ax
+    test    ax, 0x0008                  ; TS must be 0
+    jnz     .fail
+
+    ; ========================================================================
+    ; TEST 12: LMSW preserves PE bit (don't accidentally enter PM)
+    ; In real mode PE=0. LMSW must not set PE. We write a value with PE=0.
+    ; ========================================================================
+    smsw    ax
+    test    ax, 1                       ; PE should be 0
+    jnz     .fail
+    ; Write with only MP and EM bits set (no PE)
+    mov     ax, 0x0006                  ; MP=1, EM=1
+    lmsw    ax
+    smsw    ax
+    test    ax, 1                       ; PE must still be 0
+    jnz     .fail
+    test    ax, 0x0004                  ; MP must be 1
+    jz      .fail
+    test    ax, 0x0002                  ; EM must be 1
+    jz      .fail
+    ; Restore original MSW (clear MP, EM we just set)
+    ; Note: we can only set bits with LMSW, not clear them.
+    ; But MP and EM being set is safe — just restore what we can.
+    smsw    ax
+    and     ax, 0xFFF9                  ; clear MP and EM
+    lmsw    ax
+    smsw    ax
+    test    ax, 0x0006                  ; MP and EM should be clear
+    jnz     .fail_t12
+    jmp     .t12_ok
+.fail_t12:
+    ; Some CPUs may not allow clearing MP/EM via LMSW — accept if PE=0
+    smsw    ax
+    test    ax, 1
+    jnz     .fail                       ; PE must always be 0 in RM
+.t12_ok:
+
+    ; ========================================================================
+    ; TEST 13: LGDT/SGDT round-trip — store and reload GDT register
+    ; Safe in real mode. Save current GDTR, write it back, verify unchanged.
+    ; ========================================================================
+    sgdt    [rm286_gdt_buf]             ; save current GDT register
+    lgdt    [rm286_gdt_buf]             ; reload same value
+    sgdt    [rm286_gdt_buf2]            ; read again
+    ; Compare limit (2 bytes) and base (4 bytes, but 286 uses 24 bits)
+    mov     ax, [rm286_gdt_buf]         ; limit
+    mov     bx, [rm286_gdt_buf2]
+    cmp     ax, bx
+    jne     .fail
+    mov     ax, [rm286_gdt_buf + 2]     ; base low
+    mov     bx, [rm286_gdt_buf2 + 2]
+    cmp     ax, bx
+    jne     .fail
+    mov     ax, [rm286_gdt_buf + 4]     ; base high
+    mov     bx, [rm286_gdt_buf2 + 4]
+    cmp     ax, bx
+    jne     .fail
+
     ; All tests passed
     mov     al, STATUS_PASS
     jmp     .done
@@ -184,4 +276,7 @@ real286_cleanup:
 
 ; --- real286 data ---
 real286_name: db '80286 Real-Mode Behaviors', 0
-rm286_buf:    dw 0, 0, 0               ; 6-byte buffer for SGDT/SIDT
+rm286_buf:       dw 0, 0, 0             ; 6-byte buffer for SGDT/SIDT
+rm286_saved_msw: dw 0
+rm286_gdt_buf:   dw 0, 0, 0             ; GDTR save (6 bytes)
+rm286_gdt_buf2:  dw 0, 0, 0             ; GDTR verify (6 bytes)

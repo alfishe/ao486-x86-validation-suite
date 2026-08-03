@@ -171,6 +171,8 @@ test_module_table:
     dw stack_run, stack_init, stack_cleanup, stack_name
     dw bcd_run, bcd_init, bcd_cleanup, bcd_name
     dw control_run, control_init, control_cleanup, control_name
+    dw xfer_run, xfer_init, xfer_cleanup, xfer_name
+    dw mul_run, mul_init, mul_cleanup, mul_name
     ; 80186+
     dw insns186_run, insns186_init, insns186_cleanup, insns186_name
     dw enh186_run, enh186_init, enh186_cleanup, enh186_name

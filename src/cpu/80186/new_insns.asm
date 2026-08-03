@@ -220,6 +220,68 @@ insns186_run:
     cmp     ax, 0xFFFF
     jne     .fail
 
+    ; ========================================================================
+    ; TEST 15: BOUND — in-range value (no exception)
+    ; BOUND r16, m16&16: if reg < [mem] or reg > [mem+2], raise #BR (INT 5)
+    ; Bounds: [10, 20]. Value 15 is in range → no exception.
+    ; ========================================================================
+    ; --- Install temporary INT 5 handler ---
+    push    es
+    xor     ax, ax
+    mov     es, ax                      ; ES → IVT (segment 0)
+    mov     ax, [es:0x14]               ; save original INT 5 offset
+    mov     [bound_save_off], ax
+    mov     ax, [es:0x16]               ; save original INT 5 segment
+    mov     [bound_save_seg], ax
+    mov     ax, bound_int5_handler
+    mov     [es:0x14], ax
+    mov     ax, cs
+    mov     [es:0x16], ax
+    pop     es
+
+    ; Set up bounds [10, 20] in memory
+    mov     word [bound_lo], 10
+    mov     word [bound_hi], 20
+    mov     byte [bound_caught], 0       ; clear flag
+
+    ; BOUND with in-range value: AX=15, bounds [10, 20]
+    mov     ax, 15
+    bound   ax, [bound_lo]              ; 15 is in [10,20] → no exception
+    cmp     byte [bound_caught], 0      ; flag must still be 0
+    jne     .fail
+
+    ; ========================================================================
+    ; TEST 16: BOUND — out-of-range value (INT 5 raised)
+    ; AX=5, bounds [10, 20]: 5 < 10 → #BR
+    ; Handler will set flag and skip past BOUND instruction
+    ; ========================================================================
+    mov     byte [bound_caught], 0
+    mov     ax, 5
+    bound   ax, [bound_lo]              ; 5 < 10 → #BR → handler fires
+    ; Handler advanced IP past BOUND. Verify flag was set.
+    cmp     byte [bound_caught], 1
+    jne     .fail
+
+    ; ========================================================================
+    ; TEST 17: BOUND — out-of-range high value
+    ; AX=25, bounds [10, 20]: 25 > 20 → #BR
+    ; ========================================================================
+    mov     byte [bound_caught], 0
+    mov     ax, 25
+    bound   ax, [bound_lo]              ; 25 > 20 → #BR
+    cmp     byte [bound_caught], 1
+    jne     .fail
+
+    ; --- Restore original INT 5 handler ---
+    push    es
+    xor     ax, ax
+    mov     es, ax
+    mov     ax, [bound_save_off]
+    mov     [es:0x14], ax
+    mov     ax, [bound_save_seg]
+    mov     [es:0x16], ax
+    pop     es
+
     ; All tests passed
     mov     al, STATUS_PASS
     jmp     .done
@@ -242,5 +304,27 @@ insns186_run:
 insns186_cleanup:
     ret
 
+; --- INT 5 (#BR) handler for BOUND tests ---
+; Stack on entry: [SP]=IP, [SP+2]=CS, [SP+4]=FLAGS
+; BOUND instruction encoding with [disp16] is 4 bytes (62 06 lo hi)
+; We add 4 to return IP to skip past the faulting BOUND instruction.
+bound_int5_handler:
+    push    bp
+    push    ax
+    mov     bp, sp
+    ; Stack now: AX, BP, IP, CS, FLAGS
+    ; IP is at [BP+4]
+    add     word [bp + 4], 4            ; skip 4-byte BOUND instruction
+    mov     byte [cs:bound_caught], 1   ; mark exception was caught
+    pop     ax
+    pop     bp
+    iret
+
 ; --- insns186 data ---
 insns186_name: db '80186 New Instructions', 0
+
+bound_lo:       dw 0
+bound_hi:       dw 0
+bound_caught:   db 0
+bound_save_off: dw 0
+bound_save_seg: dw 0
