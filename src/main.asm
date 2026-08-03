@@ -187,6 +187,8 @@ print_fpu_name:
 %include "fpu/8087/arith.asm"
 %include "fpu/8087/compare.asm"
 %include "fpu/8087/const_special.asm"
+%include "fpu/8087/transc.asm"
+%include "fpu/8087/misc.asm"
 
 ;============================================================================
 ; GLOBAL DATA
