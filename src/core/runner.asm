@@ -161,4 +161,14 @@ runner_str_skipped: db 'Skipped: ', 0
 ;   dw smoke_run,  smoke_init,  smoke_cleanup,  smoke_name
 ;   dw arith_run,  arith_init,  arith_cleanup,  arith_name
 test_module_table:
+    dw smoke_run, smoke_init, smoke_cleanup, smoke_name
+    dw arith_run, arith_init, arith_cleanup, arith_name
+    dw shift_run, shift_init, shift_cleanup, shift_name
+    dw logic_run, logic_init, logic_cleanup, logic_name
+    dw string_run, string_init, string_cleanup, string_name
+    dw incdec_run, incdec_init, incdec_cleanup, incdec_name
+    dw div_run, div_init, div_cleanup, div_name
+    dw stack_run, stack_init, stack_cleanup, stack_name
+    dw bcd_run, bcd_init, bcd_cleanup, bcd_name
+    dw control_run, control_init, control_cleanup, control_name
     dw 0                               ; end sentinel

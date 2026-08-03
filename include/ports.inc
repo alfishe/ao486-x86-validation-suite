@@ -145,7 +145,7 @@ KBC_STAT_CMD    equ 0x64    ; Status (R) / Command (W)
 KBC_STAT_OBF    equ 0x01    ; Output buffer full
 KBC_STAT_IBF    equ 0x02    ; Input buffer full
 KBC_STAT_SYS    equ 0x04    ; System flag
-KBC_STAT_CMD    equ 0x08    ; Command/data (0=data, 1=cmd)
+KBC_STAT_C_D    equ 0x08    ; Command/data (0=data, 1=cmd)
 KBC_STAT_TTO    equ 0x20    ; Transmit time-out
 KBC_STAT_RTO    equ 0x40    ; Receive time-out
 KBC_STAT_PERR   equ 0x80    ; Parity error

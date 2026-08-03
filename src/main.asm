@@ -153,6 +153,8 @@ print_fpu_name:
 ;============================================================================
 %include "arch/dos/dosio.asm"
 %include "core/output.asm"
+%include "core/memory.asm"
+%include "core/state.asm"
 %include "core/detect.asm"
 %include "core/config.asm"
 %include "core/runner.asm"
@@ -161,7 +163,16 @@ print_fpu_name:
 ; TEST MODULES
 ; (Uncomment includes and add runner table entries as modules are created)
 ;============================================================================
-; %include "cpu/8086/smoke.asm"
+%include "cpu/8086/smoke.asm"
+%include "cpu/8086/arith.asm"
+%include "cpu/8086/shift.asm"
+%include "cpu/8086/logic.asm"
+%include "cpu/8086/string.asm"
+%include "cpu/8086/inc_dec.asm"
+%include "cpu/8086/div.asm"
+%include "cpu/8086/stack.asm"
+%include "cpu/8086/bcd.asm"
+%include "cpu/8086/control.asm"
 
 ;============================================================================
 ; GLOBAL DATA
@@ -186,6 +197,5 @@ str_fpu_387:       db '80387', 0
 str_fpu_486:       db '80486 (integrated)', 0
 str_fpu_unknown:   db 'Unknown', 0
 
-; Global CPU/FPU type variables (written by detect.asm)
-g_cpu_type:        db 0
-g_fpu_type:        db 0
+; NOTE: g_cpu_type, g_fpu_type, g_cpu_features, g_fpu_features
+; are defined in core/detect.asm

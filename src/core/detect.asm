@@ -162,9 +162,11 @@ detect_cpu:
     ; clobbering (CPUID destroys EAX, EBX, ECX, EDX).
     ;========================================================================
     test    cx, CPU_FEAT_ID_TOGGLE
-    jz      .no_cpuid
+    jz      .cpuid_done
 
-    ; Save registers that CPUID will clobber
+    ; BUGFIX: CPUID clobbers EAX, EBX, ECX, EDX. CX holds our accumulated
+    ; feature flags — save to memory before CPUID, restore after.
+    mov     [g_cpu_features], cx
     push    edx
 
     ; CPUID leaf 0 — get vendor and max leaf
@@ -173,25 +175,23 @@ detect_cpu:
     test    eax, eax                    ; max leaf >= 1?
     jz      .cpuid_restore
 
-    or      cx, CPU_FEAT_CPUID
+    or      word [g_cpu_features], CPU_FEAT_CPUID
 
-    ; CPUID leaf 1 — get feature flags
+    ; CPUID leaf 1 — get feature flags in EDX
     mov     eax, 1
     cpuid
-    ; EDX contains feature bits: bit 4 = TSC, bit 5 = MSR
-    test    edx, 0x10                   ; TSC?
+    test    edx, 0x10                   ; TSC (bit 4)?
     jz      .no_tsc
-    or      cx, CPU_FEAT_TSC
+    or      word [g_cpu_features], CPU_FEAT_TSC
 .no_tsc:
-    test    edx, 0x20                   ; MSR?
+    test    edx, 0x20                   ; MSR (bit 5)?
     jz      .cpuid_restore
-    or      cx, CPU_FEAT_MSR
+    or      word [g_cpu_features], CPU_FEAT_MSR
 
 .cpuid_restore:
     pop     edx
-    jmp     .cpuid_done
+    mov     cx, [g_cpu_features]        ; restore feature flags
 
-.no_cpuid:
 .cpuid_done:
 
     ;========================================================================
@@ -205,9 +205,11 @@ detect_cpu:
     jnz     .is_pentium
     test    cx, CPU_FEAT_CPUID
     jz      .not_pentium_cpuid
-    ; Check CPUID family
+    ; Check CPUID family — save CX since CPUID clobbers ECX
+    push    ecx
     mov     eax, 1
     cpuid
+    pop     ecx
     shr     eax, 8
     and     eax, 0x0F                   ; family
     cmp     al, 5
