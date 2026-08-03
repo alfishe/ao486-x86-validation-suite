@@ -17,10 +17,14 @@ TOOLS = tools
 DOC = doc
 
 # NASM flags
-NASMFLAGS = -f obj -I$(INCLUDE)/
+# .COM build: flat binary, no linker required
+NASMFLAGS_BIN = -f bin -I$(INCLUDE)/ -I$(SRC)/
+# OMF build: for future wlink/OMF linking
+NASMFLAGS_OMF = -f obj -I$(INCLUDE)/
 
 # Output
-TARGET = $(BIN)/x86val.exe
+COM_TARGET = $(BIN)/X86VAL.COM
+TARGET = $(COM_TARGET)
 
 # ============================================================================
 # Source files
@@ -122,25 +126,20 @@ ALL_OBJS = $(patsubst $(SRC)/%.asm,$(OBJ)/%.obj,$(ALL_SRCS))
 
 .PHONY: all clean run boot test help dirs dos linux win32 oracle
 
-all: dirs $(TARGET)
-	@echo "Build complete: $(TARGET)"
+all: dirs $(COM_TARGET)
+	@echo "Build complete: $(COM_TARGET)"
+
+# DOS .COM build (primary target — no linker needed)
+dos: $(COM_TARGET)
+
+$(COM_TARGET): $(SRC)/main.asm $(INCLUDE)/test.inc $(INCLUDE)/x86.inc $(INCLUDE)/ports.inc $(INCLUDE)/dos.inc
+	$(NASM) $(NASMFLAGS_BIN) -o $@ $(SRC)/main.asm
+	@echo "Built $(COM_TARGET) ($(shell wc -c < $@) bytes)"
 
 # Create directories
 dirs:
-	@mkdir -p $(BIN) $(OBJ)/core $(OBJ)/cpu/8086 $(OBJ)/cpu/80186 \
-	          $(OBJ)/cpu/80286 $(OBJ)/cpu/80386 $(OBJ)/cpu/80486 \
-	          $(OBJ)/fpu/8087 $(OBJ)/fpu/80387 \
-	          $(OBJ)/peripheral/pic $(OBJ)/peripheral/pit \
-	          $(OBJ)/peripheral/dma $(OBJ)/peripheral/kbc \
-	          $(OBJ)/peripheral/rtc $(OBJ)/peripheral/ide \
-	          $(OBJ)/peripheral/vga $(OBJ)/peripheral/sound \
-	          $(OBJ)/peripheral/serial $(OBJ)/timing
-
-# Main target (placeholder - actual linking depends on toolchain)
-$(TARGET): $(ALL_OBJS)
-	@echo "Linking $(TARGET)..."
-	@echo "Note: Actual linking requires DOS toolchain (WLINK, TLINK, or MS LINK)"
-	@echo "Object files ready in $(OBJ)/"
+	@mkdir -p $(BIN) $(OBJ) \
+	          $(SRC)/arch/dos $(SRC)/arch/linux $(SRC)/arch/win32
 
 # Pattern rule for assembly
 $(OBJ)/%.obj: $(SRC)/%.asm
@@ -184,8 +183,8 @@ timing: dirs $(patsubst $(SRC)/%.asm,$(OBJ)/%.obj,$(TIMING_SRCS))
 # Testing and running
 # ============================================================================
 
-run: $(TARGET)
-	$(DOSBOX) -c "mount c $(BIN)" -c "c:" -c "x86val.exe"
+run: $(COM_TARGET)
+	$(DOSBOX) -c "mount c $(BIN)" -c "c:" -c "X86VAL.COM" -c "exit"
 
 # Create bootable image
 boot: $(TARGET)
@@ -241,7 +240,8 @@ help:
 	@echo "x86 Validation Suite - Build System"
 	@echo ""
 	@echo "Targets:"
-	@echo "  all          - Build everything (default)"
+	@echo "  dos           - Build DOS .COM (primary target)"
+	@echo "  all           - Build everything (default = dos)"
 	@echo "  clean        - Remove build artifacts"
 	@echo "  run          - Run in DOSBox"
 	@echo "  boot         - Create bootable image"
