@@ -182,6 +182,12 @@ print_fpu_name:
 %include "cpu/80286/real.asm"
 %include "cpu/80286/protected.asm"
 
+; --- FPU 8087+ tests ---
+%include "fpu/8087/basic.asm"
+%include "fpu/8087/arith.asm"
+%include "fpu/8087/compare.asm"
+%include "fpu/8087/const_special.asm"
+
 ;============================================================================
 ; GLOBAL DATA
 ;============================================================================

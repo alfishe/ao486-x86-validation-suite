@@ -177,4 +177,9 @@ test_module_table:
     ; 80286+
     dw real286_run, real286_init, real286_cleanup, real286_name
     dw pm286_run, pm286_init, pm286_cleanup, pm286_name
+    ; FPU 8087+
+    dw fpu_basic_run, fpu_basic_init, fpu_basic_cleanup, fpu_basic_name
+    dw fpu_arith_run, fpu_arith_init, fpu_arith_cleanup, fpu_arith_name
+    dw fpu_cmp_run, fpu_cmp_init, fpu_cmp_cleanup, fpu_cmp_name
+    dw fpu_cs_run, fpu_cs_init, fpu_cs_cleanup, fpu_cs_name
     dw 0                               ; end sentinel
