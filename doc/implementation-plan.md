@@ -245,6 +245,7 @@ Master checklist for implementing the x86 Validation Suite.
 | 5 | TEST | 386-New | 1 | MOVSX/MOVZX | **Purpose:** sign/zero extend 8→16/32, 16→32 incl memory operands. ORACLE: manual. `src/cpu/80386/new_insns.asm` (29 sub-tests) | ✓ |
 | 5 | TEST | 386-New | 1 | SETcc (16 conditions) | **Purpose:** set byte to 0/1 based on flags. `src/cpu/80386/new_insns.asm` | ✓ |
 | 5 | TEST | 386-New | 1 | BT/BTS/BTR/BTC | **Purpose:** bit test and modify, CF=bit value, reg+memory forms, register-index. ORACLE: manual. `src/cpu/80386/bitops.asm` (25 sub-tests). **Gap:** large bit offset address crossing (bit≥32 on memory) not tested — DOSBox-X core=normal does not implement this; TODO: test on 86Box/real HW | ✓ |
+| 5 | TEST | 386-New-Gap | 2 | **GAP: BT/BTS/BTR/BTC large bit offset address crossing** | **Purpose:** BT m32,r32 with bit index ≥32 must access `mem[base + (index/8)]` (crossing dword boundary). This is a documented 386 architectural feature. **Untested** because DOSBox-X `core=normal` does not implement the address adjustment. **Action:** add test on 86Box (which implements this correctly) and/or real 486 HW. See: [coverage-matrix §16](coverage-matrix.md#16-explicitly-out-of-this-matrix-venue-routed), [specs/80386/new.md Known Gap](specs/80386/new.md#known-gap). ORACLE: manual (Intel SDM 80386) | |
 | 5 | TEST | 386-New | 1 | BSF/BSR src=0 | **Purpose:** ZF=1, dest UNCHANGED. `src/cpu/80386/bitops.asm` | ✓ |
 | 5 | TEST | 386-New | 1 | SHLD/SHRD | **Purpose:** double-precision shift, count masking (CL&0x1F), OF for count=1. ORACLE: manual. `src/cpu/80386/shifts32.asm` (24 sub-tests) | ✓ |
 | 5 | TEST | 386-New | 1 | LFS/LGS/LSS + PUSHFD/POPFD + PUSH imm32 | **Purpose:** segment load far pointers, 32-bit flag ops, 32-bit push. ORACLE: manual. `src/cpu/80386/seg386.asm` (11 sub-tests) | ✓ |
@@ -535,4 +536,5 @@ until a module actually proves too large.
 | ao486 unavailable | Use 86Box proxy |
 | Real HW unavailable | Emulator consensus |
 | test386 GPL-3.0 | Data/patterns only |
+| DOSBox-X `core=normal` omits some 386 features (BT large bit offset) | Re-test gap items on 86Box or real HW; track in [coverage-matrix §16](coverage-matrix.md#16-explicitly-out-of-this-matrix-venue-routed) |
 | SST format change | Pin v1 snapshot |

@@ -151,7 +151,7 @@ which means real silicon still produces *deterministic* values software depended
 | `DAA`/`DAS` | OF | Undefined | Medium | 1 |
 | `AND/OR/XOR/TEST` | AF | **Undefined** — real HW leaves a specific value | Medium | 1 |
 | `NEG` | AF, CF rules | CF = (operand != 0) | Medium | 1 |
-| `BT/BTS/BTR/BTC` (386+) | OF,SF,AF,PF | Only CF defined | Medium | 1 |
+| `BT/BTS/BTR/BTC` (386+) | OF,SF,AF,PF | Only CF defined; **memory form with bit offset ≥ operand size crosses into adjacent bytes** (Intel SDM) | Medium | 1 |
 | `BSF/BSR` (386+) | ZF defined; others undefined | dest unchanged if src==0 | High | 1 |
 
 *Test strategy:* capture the *actual* flag value on reference hardware/known-good
@@ -666,6 +666,7 @@ the reason the priorities above skew as they do.
 | Interrupt boundary (MOV SS/STI) | subtle 1-insn shadow | boundary tests (§10.2) |
 | Integrated peripheral **state machines** | reimplemented from scratch, thinly specified | stateful device tests (§9) — strongest edge |
 | SMC cache coherence | i/d coherence is a known FPGA-core pitfall | SMC functional test (§8.2) |
+| BT/BTS/BTR/BTC large bit offset | memory form with bit offset ≥ operand size crosses into adjacent bytes — easy to skip in RTL | bit-offset address crossing test — **currently untested** (DOSBox-X `core=normal` limitation; see §7 note and [specs/80386/new.md](specs/80386/new.md#known-gap) Known Gap) |
 | A20 / mode transitions | glue logic, easy to get wrong | wrap + transition tests (§10) |
 
 **Bottom line:** the guest suite's comparative advantage for ao486 is (a) the flag/PM/
@@ -689,3 +690,4 @@ Listed only so the boundary is visible; **not** implemented as guest tests. See
 | Simultaneous-exception priority (precise) | →C | co-sim | can't force two faults on one instruction from SW |
 | Post-triple-fault / reset / power-on state | →C/→T | co-sim / bench | guest is dead / no SW has run |
 | FPU internal guard/round/sticky, 68-bit datapath | →C | co-sim | only rounded result surfaces |
+| BT/BTS/BTR/BTC large bit offset (≥32) on memory | G⁺→C | this suite (86Box/real HW) | architecturally guest-testable but DOSBox-X `core=normal` does not implement the cross-dword address adjustment; **must re-test on 86Box or real HW** — see [§7](#7-cpu--80386-pri-1-32-bit--paging--v86) and [specs/80386/new.md](specs/80386/new.md#known-gap) |

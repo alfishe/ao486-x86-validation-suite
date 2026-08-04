@@ -13,6 +13,17 @@
 ;         - BSR:  bit scan reverse (find highest set bit)
 ;
 ; REFS:   Intel 80386 PRM Ch. 17 (BT/BTS/BTR/BTC, BSF/BSR)
+;
+; KNOWN GAP:
+;   BT/BTS/BTR/BTC with a memory operand and a bit index >= operand size
+;   (32 for dword) is an architectural 386 feature: the CPU computes the
+;   effective address as base + (index / 8), crossing into adjacent bytes.
+;   DOSBox-X core=normal does NOT implement this address adjustment, so we
+;   cannot test it there. Tests 21-24 use register-index BT on memory within
+;   a single dword (bit indices 0-31) as a partial substitute.
+;   TODO: Add cross-dword BT test on 86Box or real 486 HW.
+;   Tracked in: coverage-matrix.md §16, implementation-plan.md (386-New-Gap),
+;               specs/80386/new.md#known-gap
 ;============================================================================
 
 ;---------------------------------------------------------------------------

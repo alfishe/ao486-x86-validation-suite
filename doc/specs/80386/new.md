@@ -221,3 +221,33 @@ POST:
 - **PASS:** all new instructions produce correct results + flags
 - **FAIL:** any incorrect bit operation or sign extension
 - **SKIP:** GEN < 80386
+
+## Known Gap
+
+### BT/BTS/BTR/BTC — Large bit offset address crossing (bit index ≥32 on memory)
+
+**Architectural behavior (Intel SDM 80386):** When the destination operand is
+in memory, the bit index is NOT masked to the operand size. Instead, the CPU
+computes the effective address as `mem[base + (index / 8)]`, meaning a bit
+index ≥32 accesses an adjacent dword. For example, `BT [mem], 35` reads bit 3
+of `mem+4`.
+
+**Why it's important:** This is a documented 386 feature that a clean-room RTL
+implementation (like ao486) could easily miss — the natural implementation is
+to mask the bit index to the operand width.
+
+**Status: UNTESTED.** DOSBox-X `core=normal` does NOT implement this address
+adjustment — it appears to mask the bit index to 5 bits. Tests 21-24 in
+`src/cpu/80386/bitops.asm` therefore use register-index BT on memory within a
+single dword (bit indices 0-31) as a partial substitute.
+
+**Action required:** Add cross-dword BT test cases on 86Box (which implements
+this correctly) and/or real 486 hardware.
+
+**Tracking:**
+- [coverage-matrix.md §16](../../coverage-matrix.md#16-explicitly-out-of-this-matrix-venue-routed) — listed as partially out of matrix
+- [coverage-matrix.md §15](../../coverage-matrix.md#15-ao486-specific-risk-weighting) — listed as ao486 divergence risk
+- [implementation-plan.md](../implementation-plan.md) — Phase 5, area `386-New-Gap`
+- `src/cpu/80386/bitops.asm` — module header KNOWN GAP section
+
+**Oracle:** manual (Intel 80386 Programmer's Reference Manual, Ch. 17)
