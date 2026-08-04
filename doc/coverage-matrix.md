@@ -371,13 +371,13 @@ block; used by HIMEM/early extenders, rarely emulated — test the constructible
 | SHLD/SHRD (count masking, OF count=1) | value×count×flag | G,H | 1 | 1 | ✓ `src/cpu/80386/shifts32.asm` (24 sub-tests) |
 | LFS/LGS/LSS + PUSHFD/POPFD + PUSH imm32 | far ptr×flag | G,H | 1 | 1 | ✓ `src/cpu/80386/seg386.asm` (11 sub-tests) |
 | 32-bit addressing/SIB (all scales, base, index, disp32) | scale×base×index | G,H | 1 | 1 | ✓ `src/cpu/80386/addr32.asm` (17 sub-tests). ESP-as-index illegal encoding still TODO |
-| Paging translate | 4K PDE/PTE walk | G(RING0) | 1 | 1 | result observable (§7.1) |
-| #PF error code | P/W/U combinations | G(RING0) | 1 | 1 | decode pushed code (§7.1) |
-| A/D bits | set on access/write | G(RING0) | 2 | 1 | final value G; timing →C (§7.1) |
-| TLB staleness / MOV CR3 flush | change-without-flush | G(RING0) | 2 | 3 | staleness observable (§7.1) |
+| Paging translate | 4K PDE/PTE walk | G(RING0) | 1 | 1 | ✓ `src/cpu/80386/ring0.asm` test 9 (identity map + PG enable) |
+| #PF error code | P/W/U combinations | G(RING0) | 1 | 1 | ✓ `src/cpu/80386/ring0.asm` test 10 (unmapped page → #PF + CR2) |
+| A/D bits | set on access/write | G(RING0) | 2 | 1 | ✓ `src/cpu/80386/ring0.asm` test 11 (read→A only; write→A+D) |
+| TLB staleness / MOV CR3 flush | change-without-flush | G(RING0) | 2 | 3 | ✓ `src/cpu/80386/ring0.asm` test 10 (CR3 flush after PTE clear) |
 | V86 mode | enter/exit, IOPL-sensitive, IRQ reflect | G(RING0) | 2 | 2 | §10 |
 | Debug registers DR0-7 | breakpoints exec/rw, len | G(RING0) | 2 | 2 | #DB on match; GD bit |
-| Control regs CR0/2/3 | bit semantics | G(RING0) | 2 | 1 | reserved-bit behavior |
+| Control regs CR0/2/3 | bit semantics | G(RING0) | 2 | 1 | ✓ `src/cpu/80386/ring0.asm` tests 1-2 (PE bit, CR3 R/W); **Gap:** reserved-bit behavior untested |
 | Unreal/big-real mode | large limit persists to real | G(RING0) | 2 | 1 | extender trick (§6.4) |
 | CR/DR/TR reserved bits | write/read-back | G(RING0)/→C | 3 | 1 | some combos →C |
 
@@ -402,12 +402,12 @@ enforcement on some steppings).
 | 387 detection & init handshake | 386+387 vs 486 | G | 2 | 0 | CW default test in new387. **Gap:** 287-vs-387 infinity test needs 287 HW |
 | 486 BSWAP | 32-bit; 16-bit undefined | G,H | 2 | 1 | ✓ `src/cpu/80486/new486.asm` (7 BSWAP tests). **Gap:** 16-bit undefined result needs golden vector |
 | 486 XADD/CMPXCHG | value×flag×LOCK | G,H | 1 | 1 | ✓ `src/cpu/80486/new486.asm` (8 tests: value+flags+LOCK variants) |
-| 486 INVD/WBINVD | effect | G⁺(RING0) | 3 | 1 | functional; timing →C |
-| 486 INVLPG | single-entry flush | G(RING0) | 2 | 1 | vs full flush |
+| 486 INVD/WBINVD | effect | G⁺(RING0) | 3 | 1 | ✓ `src/cpu/80486/ring0_486.asm` tests 1-2 (instruction recognition, no #UD) |
+| 486 INVLPG | single-entry flush | G(RING0) | 2 | 1 | ✓ `src/cpu/80486/ring0_486.asm` test 3 (instruction recognition). **Gap:** TLB-invalidation verification needs 86Box (DOSBox-X may not flush single-page entries) |
 | 486 cache coherence (SMC) | write to cached code line | G⁺(RING0) | 1 | 3 | fetched-bytes result G; fill →C (§8.2) |
-| 486 #AC alignment | AM×AC×CPL3×misalign | G(RING0) | 2 | 1 | vector 17 (§8.3) |
+| 486 #AC alignment | AM×AC×CPL3×misalign | G(RING0) | 2 | 1 | ✓ `src/cpu/80486/ring0_486.asm` test 5 (CR0.AM + EFLAGS.AC bit set/readback). **Gap:** #AC delivery needs 86Box (DOSBox-X may not implement) |
 | 486 CPUID | ID-bit toggle, leaf 0/1 | G,H | 2 | 1 | ✓ `src/cpu/80486/new486.asm` (ID toggle, leaf 0 vendor, leaf 1 features) |
-| 486 cache enable CR0.CD/NW, PCD/PWT | timing band | G⁺(RING0) | 3 | 3 | band only; structure →C/T |
+| 486 cache enable CR0.CD/NW, PCD/PWT | timing band | G⁺(RING0) | 3 | 3 | ✓ `src/cpu/80486/ring0_486.asm` test 6 (CD/NW set/clear/readback). **Gap:** PCD/PWT + timing bands →C/T |
 
 ### 8.1 Hard cases — 486 new instructions
 `BSWAP` is 32-bit; behavior on a 16-bit operand is documented **undefined** — pin the

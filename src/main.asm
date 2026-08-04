@@ -158,6 +158,7 @@ print_fpu_name:
 %include "core/detect.asm"
 %include "core/config.asm"
 %include "core/runner.asm"
+%include "core/pm32.asm"
 
 ;============================================================================
 ; TEST MODULES
@@ -192,9 +193,11 @@ print_fpu_name:
 %include "cpu/80386/strings32.asm"
 %include "cpu/80386/addr32.asm"
 %include "cpu/80386/seg386.asm"
+%include "cpu/80386/ring0.asm"
 
 ; --- 80486+ tests ---
 %include "cpu/80486/new486.asm"
+%include "cpu/80486/ring0_486.asm"
 
 ; --- FPU 8087+ tests ---
 %include "fpu/8087/basic.asm"

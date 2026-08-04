@@ -187,8 +187,10 @@ test_module_table:
     dw i386str_run, i386str_init, i386str_cleanup, i386str_name
     dw i386addr_run, i386addr_init, i386addr_cleanup, i386addr_name
     dw i386seg_run, i386seg_init, i386seg_cleanup, i386seg_name
+    dw ring0_386_run, ring0_386_init, ring0_386_cleanup, ring0_386_name
     ; 80486+
     dw i486_run, i486_init, i486_cleanup, i486_name
+    dw ring0_486_run, ring0_486_init, ring0_486_cleanup, ring0_486_name
     ; FPU 8087+
     dw fpu_basic_run, fpu_basic_init, fpu_basic_cleanup, fpu_basic_name
     dw fpu_arith_run, fpu_arith_init, fpu_arith_cleanup, fpu_arith_name

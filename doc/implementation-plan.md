@@ -217,10 +217,10 @@ Master checklist for implementing the x86 Validation Suite.
 | 4 | TEST | 186 | 2 | Shift/rotate by imm8 | **Purpose:** 8086 required CL, 186+ allows immediate | |
 | 4 | TEST | 286-Real | 2 | 186 ISA on 286 | **Purpose:** verify compatibility | |
 | 4 | TEST | 286-Real | 2 | Shift-count masking | **Purpose:** &0x1F now active in real mode too | |
-| 4 | INFRA | 286-PM | 1 | Minimal GDT setup | Code/data/stack descriptors | |
-| 4 | INFRA | 286-PM | 1 | LGDT, MOV CR0/LMSW | Enable PE bit | |
-| 4 | INFRA | 286-PM | 1 | Far JMP to reload CS | Flush prefetch, load PM selector | |
-| 4 | INFRA | 286-PM | 1 | PM exit (386+) | Clear PE, reload real-mode segments | |
+| 4 | INFRA | 286-PM | 1 | Minimal GDT setup | Code/data/stack descriptors | ✓ |
+| 4 | INFRA | 286-PM | 1 | LGDT, MOV CR0/LMSW | Enable PE bit | ✓ |
+| 4 | INFRA | 286-PM | 1 | Far JMP to reload CS | Flush prefetch, load PM selector | ✓ |
+| 4 | INFRA | 286-PM | 1 | PM exit (386+) | Clear PE, reload real-mode segments | ✓ |
 | 4 | TEST | 286-Desc | 1 | Null selector load vs use | **Purpose:** load into DS/ES legal, use faults | |
 | 4 | TEST | 286-Desc | 1 | Null into SS | **Purpose:** immediate #GP | |
 | 4 | TEST | 286-Desc | 1 | Present bit = 0 | **Purpose:** #NP (or #SS for stack) | |
@@ -268,15 +268,15 @@ Master checklist for implementing the x86 Validation Suite.
 | 5 | TEST | 386-TSS | 1 | IRET from nested | **Purpose:** return via backlink | |
 | 5 | TEST | 386-TSS | 1 | TSS busy bit | **Purpose:** set on entry, cleared on exit | |
 | 5 | TEST | 386-TSS | 1 | SS0:ESP0 loading | **Purpose:** privilege switch uses TSS stack | |
-| 5 | INFRA | 386-Page | 1 | Set up PD and PT | Identity-map first 4MB + test region | |
-| 5 | INFRA | 386-Page | 1 | Enable paging (CR0.PG) | — | |
-| 5 | TEST | 386-Page | 1 | Linear→physical | **Purpose:** correct address translation | |
-| 5 | TEST | 386-Page | 1 | #PF not-present | **Purpose:** P=0 → #PF with error code P=0 | |
-| 5 | TEST | 386-Page | 1 | #PF write-to-RO | **Purpose:** W/R=0 write → #PF with W=1 | |
+| 5 | INFRA | 386-Page | 1 | Set up PD and PT | Identity-map first 4MB + test region. ✓ `src/core/pm32.asm` + `src/cpu/80386/ring0.asm` (runtime GDT with flat DS for page-table access) | ✓ |
+| 5 | INFRA | 386-Page | 1 | Enable paging (CR0.PG) | ✓ `src/cpu/80386/ring0.asm` test 9 (MOV CR3 + OR CR0,PG) | ✓ |
+| 5 | TEST | 386-Page | 1 | Linear→physical | **Purpose:** correct address translation. ✓ `src/cpu/80386/ring0.asm` test 9 | ✓ |
+| 5 | TEST | 386-Page | 1 | #PF not-present | **Purpose:** P=0 → #PF with error code P=0. ✓ `src/cpu/80386/ring0.asm` test 10 (CR2 check) | ✓ |
+| 5 | TEST | 386-Page | 1 | #PF write-to-RO | **Purpose:** W/R=0 write → #PF with W=1. ✓ `src/cpu/80486/ring0_486.asm` test 4 (CR0.WP) | ✓ |
 | 5 | TEST | 386-Page | 1 | #PF user-vs-super | **Purpose:** U/S enforcement | |
 | 5 | TEST | 386-Page | 1 | #PF error code bits | **Purpose:** P/W/U decoded correctly | |
-| 5 | TEST | 386-Page | 1 | A/D bit updates | **Purpose:** A on access, D on write | |
-| 5 | TEST | 386-Page | 1 | MOV CR3 TLB flush | **Purpose:** new CR3 invalidates all entries | |
+| 5 | TEST | 386-Page | 1 | A/D bit updates | **Purpose:** A on access, D on write. ✓ `src/cpu/80386/ring0.asm` test 11 (read→A only; write→A+D) | ✓ |
+| 5 | TEST | 386-Page | 1 | MOV CR3 TLB flush | **Purpose:** new CR3 invalidates all entries. ✓ `src/cpu/80386/ring0.asm` test 10 (CR3 write before #PF test) | ✓ |
 | 5 | TEST | 386-Page | 2 | TLB staleness | **Purpose:** modify PTE w/o flush → old mapping | |
 | 5 | TEST | 386-Page | 1 | Oracle vs SST386PM | **Purpose:** results must match SST vectors | |
 | 5 | INFRA | 386-V86 | 1 | Enter V86 (IRET VM=1) | Set VM bit in EFLAGS via IRET | |
@@ -290,7 +290,7 @@ Master checklist for implementing the x86 Validation Suite.
 | 5 | TEST | 386-Debug | 2 | DR7 enable bits | **Purpose:** L0-L3, G0-G3 activation | |
 | 5 | TEST | 386-Debug | 2 | DR6 status | **Purpose:** which breakpoint triggered | |
 | 5 | TEST | 386-Debug | 2 | GD bit | **Purpose:** debug register protection | |
-| 5 | TEST | 386-CR | 2 | CR0/CR2/CR3 | **Purpose:** bit semantics | |
+| 5 | TEST | 386-CR | 2 | CR0/CR2/CR3 | **Purpose:** bit semantics. ✓ `src/cpu/80386/ring0.asm` tests 1-2 (PE bit verify, CR3 R/W) | ✓ |
 | 5 | TEST | 386-CR | 2 | Reserved bits | **Purpose:** read-back behavior | |
 | 5 | TEST | 386-Debug | 2 | TR3–TR7 test registers | **Purpose:** cache test regs (486); read/write back behavior. ORACLE: golden | |
 | 5 | TEST | 386-Gate | 2 | INT *n* gate-DPL vs CPL privilege | **Purpose:** software INT gate privilege checks (distinct from HW IRQ). ORACLE: xsuite | |
@@ -307,19 +307,19 @@ Master checklist for implementing the x86 Validation Suite.
 | 6 | TEST | 486-New | 1 | XADD | **Purpose:** exchange and add, verify flags. `src/cpu/80486/new486.asm` tests 6–9, 16 | ✓ |
 | 6 | TEST | 486-New | 1 | CMPXCHG | **Purpose:** ZF semantics, accumulator update. `src/cpu/80486/new486.asm` tests 10–13 | ✓ |
 | 6 | TEST | 486-New | 2 | LOCK variants | **Purpose:** LOCK XADD, LOCK CMPXCHG. `src/cpu/80486/new486.asm` tests 18–19 | ✓ |
-| 6 | TEST | 486-New | 2 | INVD/WBINVD | **Purpose:** cache invalidate (functional) | |
-| 6 | TEST | 486-New | 2 | INVLPG | **Purpose:** single TLB entry invalidate | |
+| 6 | TEST | 486-New | 2 | INVD/WBINVD | **Purpose:** cache invalidate (functional). ✓ `src/cpu/80486/ring0_486.asm` tests 1-2 | ✓ |
+| 6 | TEST | 486-New | 2 | INVLPG | **Purpose:** single TLB entry invalidate. ✓ `src/cpu/80486/ring0_486.asm` test 3. **Gap:** full TLB-invalidation needs 86Box | ✓ |
 | 6 | TEST | 486-Cache | 1 | SMC coherence | **Purpose:** write to code line → fetches new bytes | |
 | 6 | TEST | 486-Cache | 2 | Cached vs uncached band | **Purpose:** timing ratio proves cache active | |
-| 6 | TEST | 486-Cache | 3 | CR0.CD/NW, PCD/PWT | **Purpose:** cache control bits | |
+| 6 | TEST | 486-Cache | 3 | CR0.CD/NW, PCD/PWT | **Purpose:** cache control bits. ✓ `src/cpu/80486/ring0_486.asm` test 6 (CD/NW set/clear/readback) | ✓ |
 | 6 | TEST | 486-CPUID | 2 | EFLAGS.ID toggle | **Purpose:** CPUID present if ID toggles. `src/cpu/80486/new486.asm` test 14 | ✓ |
 | 6 | TEST | 486-CPUID | 2 | Leaf 0 vendor | **Purpose:** "GenuineIntel" or AMD/Cyrix. `src/cpu/80486/new486.asm` test 14 | ✓ |
 | 6 | TEST | 486-CPUID | 2 | Leaf 1 family/model | **Purpose:** CPU identification. `src/cpu/80486/new486.asm` test 17 | ✓ |
-| 6 | TEST | 486-AC | 2 | CR0.AM + EFLAGS.AC | **Purpose:** enable alignment check | |
+| 6 | TEST | 486-AC | 2 | CR0.AM + EFLAGS.AC | **Purpose:** enable alignment check. ✓ `src/cpu/80486/ring0_486.asm` test 5 (bit set/readback). **Gap:** #AC delivery needs 86Box | ✓ |
 | 6 | TEST | 486-AC | 2 | Misaligned word → #AC | **Purpose:** word at odd address faults | |
 | 6 | TEST | 486-AC | 2 | #AC ring 3 only | **Purpose:** ring 0 no fault, ring 3 faults | |
-| 6 | TEST | 486-WP | 2 | CR0.WP=0 | **Purpose:** supervisor writes R/O user page | |
-| 6 | TEST | 486-WP | 2 | CR0.WP=1 | **Purpose:** supervisor write → #PF | |
+| 6 | TEST | 486-WP | 2 | CR0.WP=0 | **Purpose:** supervisor writes R/O user page. ✓ `src/cpu/80486/ring0_486.asm` test 4 | ✓ |
+| 6 | TEST | 486-WP | 2 | CR0.WP=1 | **Purpose:** supervisor write → #PF. ✓ `src/cpu/80486/ring0_486.asm` test 4 | ✓ |
 | 7 | TEST | PIC | 1 | ICW1-4 sequence | **Purpose:** proper initialization | |
 | 7 | TEST | PIC | 1 | OCW1/OCW2/OCW3 | **Purpose:** mask, EOI, read commands | |
 | 7 | TEST | PIC | 1 | Specific vs non-specific EOI | **Purpose:** EOI behavior differs | |
