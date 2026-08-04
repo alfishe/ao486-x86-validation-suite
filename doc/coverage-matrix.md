@@ -362,10 +362,15 @@ block; used by HIMEM/early extenders, rarely emulated — test the constructible
 
 | Area | Dim | Venue | Pri | Wave | Notes |
 |------|-----|:----:|:--:|:---:|-----------------|
-| 386 CPU detection | direct | G | 1 | 0 | 386 presence smoke |
-| 32-bit ALU/shift/string | as §3 at 32-bit | G,H | 1 | 1 | operand-size prefix paths |
-| New insns MOVSX/MOVZX/SETcc/BT(S/R/C)/BSF/BSR/SHLD/SHRD | value×flag | G,H | 1 | 1 | BSF/BSR src=0 dest-unchanged (§3.1) |
-| 32-bit addressing/SIB | scale×base×index | G,H | 1 | 1 | ESP-as-index illegal; no-base disp32 (§3.3) |
+| 386 CPU detection | direct | G | 1 | 0 | ✓ core detection (`detect_cpu`) |
+| 32-bit ALU (ADD/SUB/ADC/SBB/MUL/DIV/INC/DEC/NEG) | as §3 at 32-bit | G,H | 1 | 1 | ✓ `src/cpu/80386/arith32.asm` (35 sub-tests) |
+| 32-bit string ops (MOVSD/STOSD/LODSD/CMPSD/SCASD + REP) | dir×rep×width | G,H | 1 | 1 | ✓ `src/cpu/80386/strings32.asm` (12 sub-tests) |
+| MOVSX/MOVZX/SETcc | value×flag | G,H | 1 | 1 | ✓ `src/cpu/80386/new_insns.asm` (29 sub-tests) |
+| BT/BTS/BTR/BTC | reg×mem×bit-index | G,H | 1 | 1 | ✓ `src/cpu/80386/bitops.asm` (25 sub-tests). **Gap:** bit-offset ≥32 address crossing untested — DOSBox-X core=normal does not implement; TODO: 86Box/real HW |
+| BSF/BSR (src=0 dest-unchanged) | value | G,H | 1 | 1 | ✓ `src/cpu/80386/bitops.asm` (§3.1) |
+| SHLD/SHRD (count masking, OF count=1) | value×count×flag | G,H | 1 | 1 | ✓ `src/cpu/80386/shifts32.asm` (24 sub-tests) |
+| LFS/LGS/LSS + PUSHFD/POPFD + PUSH imm32 | far ptr×flag | G,H | 1 | 1 | ✓ `src/cpu/80386/seg386.asm` (11 sub-tests) |
+| 32-bit addressing/SIB (all scales, base, index, disp32) | scale×base×index | G,H | 1 | 1 | ✓ `src/cpu/80386/addr32.asm` (17 sub-tests). ESP-as-index illegal encoding still TODO |
 | Paging translate | 4K PDE/PTE walk | G(RING0) | 1 | 1 | result observable (§7.1) |
 | #PF error code | P/W/U combinations | G(RING0) | 1 | 1 | decode pushed code (§7.1) |
 | A/D bits | set on access/write | G(RING0) | 2 | 1 | final value G; timing →C (§7.1) |

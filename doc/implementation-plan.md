@@ -238,17 +238,19 @@ Master checklist for implementing the x86 Validation Suite.
 | 4 | TEST | 286-Sys | 3 | LOADALL (0F 05/07) constructible subset | **Purpose:** load entire CPU state from memory block; test constructible cases only (§6.4). ORACLE: golden | |
 | 4 | TEST | 286-Sys | 2 | LDT switching / LLDT / LDT-relative loads | **Purpose:** LLDT + segment loads relative to LDT (SST386PM gap). ORACLE: manual+xsuite | |
 | 4 | TEST | 286-Mode | 3 | PM→real escape (reset/KBC/triple-fault) | **Purpose:** 286 can't cleanly exit PM; test observable path. ORACLE: golden. Post-reset →C | |
-| 5 | TEST | 386-32bit | 1 | 32-bit arith/logic/shift | **Purpose:** extend Phase 2 to EAX/EBX/etc | |
-| 5 | TEST | 386-32bit | 1 | Operand-size prefix (66h) | **Purpose:** 16↔32 bit toggle | |
-| 5 | TEST | 386-32bit | 1 | Address-size prefix (67h) | **Purpose:** 16↔32 bit addressing | |
-| 5 | TEST | 386-New | 1 | MOVSX/MOVZX | **Purpose:** sign/zero extend 8→16/32, 16→32 | |
-| 5 | TEST | 386-New | 1 | SETcc (16 conditions) | **Purpose:** set byte to 0/1 based on flags | |
-| 5 | TEST | 386-New | 1 | BT/BTS/BTR/BTC | **Purpose:** bit test and modify, CF=bit value | |
-| 5 | TEST | 386-New | 1 | BSF/BSR src=0 | **Purpose:** ZF=1, dest UNCHANGED (not zeroed) | |
-| 5 | TEST | 386-New | 1 | SHLD/SHRD | **Purpose:** double-precision shift | |
-| 5 | TEST | 386-Addr | 1 | 32-bit ModR/M forms | **Purpose:** all [base+idx*scale+disp] combos | |
-| 5 | TEST | 386-Addr | 1 | SIB byte | **Purpose:** scale, index, base fields | |
-| 5 | TEST | 386-Addr | 1 | SIB no-base | **Purpose:** mod=0 base=5 → disp32 absolute | |
+| 5 | TEST | 386-32bit | 1 | 32-bit arith/logic/shift | **Purpose:** extend Phase 2 to EAX/EBX/etc. ORACLE: manual. `src/cpu/80386/arith32.asm` (35 sub-tests: ADD/SUB/ADC/SBB carry chains, MUL/DIV 32-bit, INC/DEC/NEG 32-bit) | ✓ |
+| 5 | TEST | 386-32bit | 1 | 32-bit string ops (MOVSD/STOSD/LODSD/CMPSD/SCASD + REP) | **Purpose:** 32-bit string instructions with ECX counter, DF direction. ORACLE: manual. `src/cpu/80386/strings32.asm` (12 sub-tests) | ✓ |
+| 5 | TEST | 386-32bit | 1 | Operand-size prefix (66h) | **Purpose:** 16↔32 bit toggle. Covered in addr32, seg386, arith32, shifts32 | ✓ |
+| 5 | TEST | 386-32bit | 1 | Address-size prefix (67h) | **Purpose:** 16↔32 bit addressing. Covered in addr32 | ✓ |
+| 5 | TEST | 386-New | 1 | MOVSX/MOVZX | **Purpose:** sign/zero extend 8→16/32, 16→32 incl memory operands. ORACLE: manual. `src/cpu/80386/new_insns.asm` (29 sub-tests) | ✓ |
+| 5 | TEST | 386-New | 1 | SETcc (16 conditions) | **Purpose:** set byte to 0/1 based on flags. `src/cpu/80386/new_insns.asm` | ✓ |
+| 5 | TEST | 386-New | 1 | BT/BTS/BTR/BTC | **Purpose:** bit test and modify, CF=bit value, reg+memory forms, register-index. ORACLE: manual. `src/cpu/80386/bitops.asm` (25 sub-tests). **Gap:** large bit offset address crossing (bit≥32 on memory) not tested — DOSBox-X core=normal does not implement this; TODO: test on 86Box/real HW | ✓ |
+| 5 | TEST | 386-New | 1 | BSF/BSR src=0 | **Purpose:** ZF=1, dest UNCHANGED. `src/cpu/80386/bitops.asm` | ✓ |
+| 5 | TEST | 386-New | 1 | SHLD/SHRD | **Purpose:** double-precision shift, count masking (CL&0x1F), OF for count=1. ORACLE: manual. `src/cpu/80386/shifts32.asm` (24 sub-tests) | ✓ |
+| 5 | TEST | 386-New | 1 | LFS/LGS/LSS + PUSHFD/POPFD + PUSH imm32 | **Purpose:** segment load far pointers, 32-bit flag ops, 32-bit push. ORACLE: manual. `src/cpu/80386/seg386.asm` (11 sub-tests) | ✓ |
+| 5 | TEST | 386-Addr | 1 | 32-bit ModR/M forms | **Purpose:** all [base+idx*scale+disp] combos. ORACLE: manual. `src/cpu/80386/addr32.asm` (17 sub-tests) | ✓ |
+| 5 | TEST | 386-Addr | 1 | SIB byte | **Purpose:** scale ×1/×2/×4/×8, index, base fields | ✓ |
+| 5 | TEST | 386-Addr | 1 | SIB no-base | **Purpose:** mod=0 base=5 → disp32 absolute. Covered in addr32 | ✓ |
 | 5 | TEST | 386-Addr | 2 | ESP as index | **Purpose:** illegal encoding (reserved) | |
 | 5 | INFRA | Import | 1 | Run import_singlestep_pm | Generate gates/paging/v86/segments JSON | |
 | 5 | TEST | Import | 1 | Verify SST vectors | **~1000+ cases** across 122 files | |

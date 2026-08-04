@@ -368,6 +368,89 @@ i386_run:
     cmp     ax, [i386_sp_save]
     jne     .fail
 
+    ; ========================================================================
+    ; TEST 24: MOVSX r32, m8 — sign-extend byte from memory
+    ; mem = 0xFF (=-1) → EAX = 0xFFFFFFFF
+    ; ========================================================================
+    mov     byte [i386_buf], 0xFF
+    movsx   eax, byte [i386_buf]
+    cmp     eax, 0xFFFFFFFF
+    jne     .fail
+
+    mov     byte [i386_buf], 0x7F
+    movsx   eax, byte [i386_buf]
+    cmp     eax, 0x0000007F
+    jne     .fail
+
+    ; ========================================================================
+    ; TEST 25: MOVSX r32, m16 — sign-extend word from memory
+    ; mem = 0xFFFF (=-1) → EAX = 0xFFFFFFFF
+    ; ========================================================================
+    mov     word [i386_buf], 0xFFFF
+    movsx   eax, word [i386_buf]
+    cmp     eax, 0xFFFFFFFF
+    jne     .fail
+
+    mov     word [i386_buf], 0x8000
+    movsx   eax, word [i386_buf]
+    cmp     eax, 0xFFFF8000
+    jne     .fail
+
+    mov     word [i386_buf], 0x7FFF
+    movsx   eax, word [i386_buf]
+    cmp     eax, 0x00007FFF
+    jne     .fail
+
+    ; ========================================================================
+    ; TEST 26: MOVSX r16, m8 — sign-extend byte to 16-bit
+    ; mem = 0x80 → AX = 0xFF80
+    ; ========================================================================
+    mov     byte [i386_buf], 0x80
+    movsx   ax, byte [i386_buf]
+    cmp     ax, 0xFF80
+    jne     .fail
+
+    mov     byte [i386_buf], 0x7F
+    movsx   ax, byte [i386_buf]
+    cmp     ax, 0x007F
+    jne     .fail
+
+    ; ========================================================================
+    ; TEST 27: MOVZX r32, m8 — zero-extend byte from memory
+    ; mem = 0xFF → EAX = 0x000000FF
+    ; ========================================================================
+    mov     byte [i386_buf], 0xFF
+    movzx   eax, byte [i386_buf]
+    cmp     eax, 0x000000FF
+    jne     .fail
+
+    mov     byte [i386_buf], 0x80
+    movzx   eax, byte [i386_buf]
+    cmp     eax, 0x00000080
+    jne     .fail
+
+    ; ========================================================================
+    ; TEST 28: MOVZX r32, m16 — zero-extend word from memory
+    ; mem = 0xFFFF → EAX = 0x0000FFFF
+    ; ========================================================================
+    mov     word [i386_buf], 0xFFFF
+    movzx   eax, word [i386_buf]
+    cmp     eax, 0x0000FFFF
+    jne     .fail
+
+    mov     word [i386_buf], 0x8000
+    movzx   eax, word [i386_buf]
+    cmp     eax, 0x00008000
+    jne     .fail
+
+    ; ========================================================================
+    ; TEST 29: MOVZX r16, m8 — zero-extend byte to 16-bit
+    ; ========================================================================
+    mov     byte [i386_buf], 0xAB
+    movzx   ax, byte [i386_buf]
+    cmp     ax, 0x00AB
+    jne     .fail
+
     ; All tests passed
     mov     al, STATUS_PASS
     jmp     .done

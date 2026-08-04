@@ -189,6 +189,9 @@ print_fpu_name:
 %include "cpu/80386/bitops.asm"
 %include "cpu/80386/shifts32.asm"
 %include "cpu/80386/arith32.asm"
+%include "cpu/80386/strings32.asm"
+%include "cpu/80386/addr32.asm"
+%include "cpu/80386/seg386.asm"
 
 ; --- FPU 8087+ tests ---
 %include "fpu/8087/basic.asm"

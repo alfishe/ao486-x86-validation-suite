@@ -293,6 +293,90 @@ i386bit_run:
     cmp     eax, 30
     jne     .fail
 
+    ; ========================================================================
+    ; TEST 21: BT m32, r32 — bit test with register index on memory
+    ; NOTE: large bit offset address crossing (bit ≥ 32 on memory) is a
+    ; documented 386 feature but not implemented correctly in DOSBox-X
+    ; core=normal. We test register-index BT on memory within a single
+    ; dword instead. TODO: add cross-dword BT test on 86Box/real HW.
+    ; Ref: Intel 80386 PRM Ch. 17 (BT r/m32, r32)
+    ; ========================================================================
+    mov     dword [i386bit_buf], 0x00400000   ; bit 22 set
+    mov     ecx, 22
+    bt      dword [i386bit_buf], ecx
+    jnc     .fail                              ; CF must be 1
+
+    mov     dword [i386bit_buf], 0x00000000   ; all clear
+    mov     ecx, 15
+    bt      dword [i386bit_buf], ecx
+    jc      .fail                              ; CF must be 0
+
+    ; ========================================================================
+    ; TEST 22: BTS m32, r32 — set bit with register index on memory
+    ; ========================================================================
+    mov     dword [i386bit_buf], 0x00000000
+    mov     ecx, 18
+    bts     dword [i386bit_buf], ecx
+    jc      .fail                                ; was 0 → CF=0
+    cmp     dword [i386bit_buf], 0x00040000       ; bit 18 set
+    jne     .fail
+
+    ; BTS on already-set bit
+    bts     dword [i386bit_buf], ecx
+    jnc     .fail                                ; was 1 → CF=1
+    cmp     dword [i386bit_buf], 0x00040000       ; unchanged
+    jne     .fail
+
+    ; ========================================================================
+    ; TEST 23: BTR m32, r32 — reset bit with register index on memory
+    ; ========================================================================
+    mov     dword [i386bit_buf], 0x00040000   ; bit 18 set
+    mov     ecx, 18
+    btr     dword [i386bit_buf], ecx
+    jnc     .fail                                ; was 1 → CF=1
+    cmp     dword [i386bit_buf], 0x00000000       ; bit 18 cleared
+    jne     .fail
+
+    ; BTR on already-clear bit
+    btr     dword [i386bit_buf], ecx
+    jc      .fail                                ; was 0 → CF=0
+    cmp     dword [i386bit_buf], 0x00000000       ; unchanged
+    jne     .fail
+
+    ; ========================================================================
+    ; TEST 24: BTC m32, r32 — toggle bit with register index on memory
+    ; ========================================================================
+    mov     dword [i386bit_buf], 0x00000000
+    mov     ecx, 25
+    btc     dword [i386bit_buf], ecx               ; toggle: 0→1
+    jc      .fail                                  ; was 0 → CF=0
+    cmp     dword [i386bit_buf], 0x02000000         ; bit 25 set
+    jne     .fail
+
+    btc     dword [i386bit_buf], ecx               ; toggle: 1→0
+    jnc     .fail                                  ; was 1 → CF=1
+    cmp     dword [i386bit_buf], 0x00000000         ; bit 25 cleared
+    jne     .fail
+
+    ; ========================================================================
+    ; TEST 25: BT r32, r32 — bit test with all boundary indices
+    ; Test bits 0 and 31 (boundary cases)
+    ; ========================================================================
+    mov     eax, 0x00000001                      ; bit 0
+    mov     ecx, 0
+    bt      eax, ecx
+    jnc     .fail
+
+    mov     eax, 0x80000000                      ; bit 31
+    mov     ecx, 31
+    bt      eax, ecx
+    jnc     .fail
+
+    mov     eax, 0x00000001                      ; bit 0
+    mov     ecx, 31
+    bt      eax, ecx
+    jc      .fail                                ; bit 31 is 0
+
     ; All tests passed
     mov     al, STATUS_PASS
     jmp     .done
@@ -316,4 +400,4 @@ i386bit_cleanup:
 ; --- i386 bitops data ---
 i386bit_name: db '80386 Bit Operations', 0
 
-i386bit_buf: dd 0
+i386bit_buf:  dd 0

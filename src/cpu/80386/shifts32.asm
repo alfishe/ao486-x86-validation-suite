@@ -255,6 +255,112 @@ i386shf_run:
     cmp     eax, 0x0FFFFFFF
     jne     .fail
 
+    ; ========================================================================
+    ; TEST 17: SHLD count masking — CL=32 masks to 0 (no-op)
+    ; ========================================================================
+    stc                                     ; pre-set CF
+    mov     eax, 0x12345678
+    mov     edx, 0x9ABCDEF0
+    mov     cl, 32                         ; 32 & 0x1F = 0
+    shld    eax, edx, cl
+    pushfd
+    pop     ecx
+    cmp     eax, 0x12345678                 ; unchanged
+    jne     .fail
+    test    ecx, FLAG_CF
+    jz      .fail                            ; CF must still be 1
+
+    ; ========================================================================
+    ; TEST 18: SHLD count masking — CL=33 masks to 1
+    ; ========================================================================
+    mov     eax, 0x12345678
+    mov     edx, 0x9ABCDEF0
+    mov     cl, 33                         ; 33 & 0x1F = 1
+    shld    eax, edx, cl
+    pushfd
+    pop     ecx
+    cmp     eax, 0x2468ACF1                 ; (0x12345678<<1)|(0x9ABCDEF0>>31)
+    jne     .fail
+    test    ecx, FLAG_CF
+    jnz     .fail                            ; CF=0 (bit31 of 0x12345678 is 0)
+
+    ; ========================================================================
+    ; TEST 19: SHRD count masking — CL=36 masks to 4
+    ; ========================================================================
+    mov     eax, 0xDEADBEEF
+    mov     edx, 0xCAFEBABE
+    mov     cl, 36                         ; 36 & 0x1F = 4
+    shrd    eax, edx, cl
+    cmp     eax, 0xEDEADBEE                 ; same as SHRD ..., 4
+    jne     .fail
+
+    ; ========================================================================
+    ; TEST 20: SHRD count masking — CL=255 masks to 31
+    ; ========================================================================
+    mov     eax, 0x80000001
+    mov     edx, 0xFFFFFFFF
+    mov     cl, 255                        ; 255 & 0x1F = 31
+    shrd    eax, edx, cl
+    cmp     eax, 0xFFFFFFFF                 ; (0x80000001>>31)|(0xFFFFFFFF<<1)
+    jne     .fail
+
+    ; ========================================================================
+    ; TEST 21: SHLD count=1 OF=1 — sign bit changes
+    ; ========================================================================
+    mov     eax, 0x80000000
+    mov     edx, 0x00000000
+    shld    eax, edx, 1
+    pushfd
+    pop     ecx
+    cmp     eax, 0x00000000
+    jne     .fail
+    test    ecx, FLAG_CF
+    jz      .fail                            ; CF=1
+    test    ecx, FLAG_OF
+    jz      .fail                            ; OF=1
+
+    ; ========================================================================
+    ; TEST 22: SHLD count=1 OF=0 — sign bit unchanged
+    ; ========================================================================
+    mov     eax, 0x12345678
+    mov     edx, 0x9ABCDEF0
+    shld    eax, edx, 1
+    pushfd
+    pop     ecx
+    cmp     eax, 0x2468ACF1
+    jne     .fail
+    test    ecx, FLAG_OF
+    jnz     .fail                            ; OF=0
+
+    ; ========================================================================
+    ; TEST 23: SHRD count=1 OF=1 — sign bit changes
+    ; ========================================================================
+    mov     eax, 0x12345678
+    mov     edx, 0x9ABCDEF1
+    shrd    eax, edx, 1
+    pushfd
+    pop     ecx
+    cmp     eax, 0x891A2B3C
+    jne     .fail
+    test    ecx, FLAG_OF
+    jz      .fail                            ; OF=1
+
+    ; ========================================================================
+    ; TEST 24: SHRD count=1 OF=0 — sign bit unchanged
+    ; eax=0x80000001 (MSB=1,bit0=1), edx=0x80000001 (bit0=1)
+    ; result = (0x80000001>>1)|(0x80000001<<31) = 0x40000000|0x80000000 = 0xC0000000
+    ; CF=1, MSB(result)=1 → OF=0 (both SDM and alt defs agree)
+    ; ========================================================================
+    mov     eax, 0x80000001
+    mov     edx, 0x80000001
+    shrd    eax, edx, 1
+    pushfd
+    pop     ecx
+    cmp     eax, 0xC0000000
+    jne     .fail
+    test    ecx, FLAG_OF
+    jnz     .fail                            ; OF=0
+
     ; All tests passed
     mov     al, STATUS_PASS
     jmp     .done

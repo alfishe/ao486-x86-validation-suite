@@ -377,6 +377,118 @@ i386a32_run:
     cmp     eax, 0x56781234
     jne     .fail
 
+    ; ========================================================================
+    ; TEST 28: 32-bit ADC — carry in (0xFFFFFFFF + 0 + CF=1 = 0, CF=1)
+    ; ========================================================================
+    stc                                     ; set CF=1
+    mov     eax, 0xFFFFFFFF
+    adc     eax, 0                          ; +0 + CF(1) = 0 with CF=1
+    pushfd
+    pop     ecx
+    cmp     eax, 0x00000000
+    jne     .fail
+    test    ecx, FLAG_CF
+    jz      .fail                           ; CF must be 1
+    test    ecx, FLAG_ZF
+    jz      .fail                           ; ZF must be 1
+
+    ; ========================================================================
+    ; TEST 29: 32-bit ADC — no carry in (0xFFFFFFFF + 0 + CF=0 = 0xFFFFFFFF, CF=0)
+    ; ========================================================================
+    clc                                     ; CF=0
+    mov     eax, 0xFFFFFFFF
+    adc     eax, 0
+    pushfd
+    pop     ecx
+    cmp     eax, 0xFFFFFFFF
+    jne     .fail
+    test    ecx, FLAG_CF
+    jnz     .fail                           ; CF must be 0
+
+    ; ========================================================================
+    ; TEST 30: 32-bit ADC — carry chain threading
+    ; Multi-precision: 0xFFFFFFFF + 0x00000001 = 0x100000000
+    ; Lower dword: 0xFFFFFFFF + 1 = 0x00000000 CF=1
+    ; Upper dword: 0x00000000 + 0 + CF(1) = 0x00000001 CF=0
+    ; ========================================================================
+    mov     eax, 0xFFFFFFFF
+    mov     ebx, 0x00000000
+    add     eax, 1                          ; lower dword, sets CF=1
+    mov     dword [i386a32_buf], eax        ; save lower result
+    adc     ebx, 0                          ; upper dword + carry
+    cmp     dword [i386a32_buf], 0x00000000
+    jne     .fail
+    cmp     ebx, 0x00000001
+    jne     .fail
+
+    ; ========================================================================
+    ; TEST 31: 32-bit SBB — borrow in (0 - 0 - CF=1 = 0xFFFFFFFF, CF=1)
+    ; ========================================================================
+    stc                                     ; CF=1
+    mov     eax, 0x00000000
+    sbb     eax, 0                          ; 0 - 0 - CF(1) = 0xFFFFFFFF, CF=1
+    pushfd
+    pop     ecx
+    cmp     eax, 0xFFFFFFFF
+    jne     .fail
+    test    ecx, FLAG_CF
+    jz      .fail                           ; CF must be 1 (borrow)
+
+    ; ========================================================================
+    ; TEST 32: 32-bit SBB — no borrow in (0 - 0 - CF=0 = 0, CF=0)
+    ; ========================================================================
+    clc                                     ; CF=0
+    mov     eax, 0x00000000
+    sbb     eax, 0                          ; 0 - 0 - 0 = 0, CF=0
+    pushfd
+    pop     ecx
+    cmp     eax, 0x00000000
+    jne     .fail
+    test    ecx, FLAG_CF
+    jnz     .fail                           ; CF must be 0
+
+    ; ========================================================================
+    ; TEST 33: 32-bit SBB — borrow chain (multi-precision subtract)
+    ; Compute 0x0000000100000000 - 0x0000000000000001 = 0x00000000FFFFFFFF
+    ; Lower dword: 0x00000000 - 0x00000001 = CF=1, result=0xFFFFFFFF
+    ; Upper dword: 0x00000001 - 0 - CF(1) = 0x00000000
+    ; ========================================================================
+    mov     eax, 0x00000000                 ; lower minuend
+    mov     ebx, 0x00000001                 ; upper minuend
+    sub     eax, 1                          ; lower: 0 - 1, sets CF=1
+    mov     dword [i386a32_buf], eax        ; save lower result
+    sbb     ebx, 0                          ; upper: 1 - 0 - CF(1) = 0
+    cmp     dword [i386a32_buf], 0xFFFFFFFF
+    jne     .fail
+    cmp     ebx, 0x00000000
+    jne     .fail
+
+    ; ========================================================================
+    ; TEST 34: 32-bit ADC — signed overflow (0x7FFFFFFF + 0 + CF=0, OF=0)
+    ; ========================================================================
+    clc
+    mov     eax, 0x7FFFFFFF
+    adc     eax, 0
+    pushfd
+    pop     ecx
+    cmp     eax, 0x7FFFFFFF
+    jne     .fail
+    test    ecx, FLAG_OF
+    jnz     .fail                           ; OF=0 (no signed overflow)
+
+    ; ========================================================================
+    ; TEST 35: 32-bit ADC with immediate — ADC EAX, imm32
+    ; ========================================================================
+    clc
+    mov     eax, 0x10000000
+    adc     eax, 0x70000000                  ; = 0x80000000, CF=0, OF=1
+    pushfd
+    pop     ecx
+    cmp     eax, 0x80000000
+    jne     .fail
+    test    ecx, FLAG_OF
+    jz      .fail                           ; OF=1 (pos+pos=neg = overflow)
+
     ; All tests passed
     mov     al, STATUS_PASS
     jmp     .done

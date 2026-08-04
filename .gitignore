@@ -25,6 +25,7 @@
 *.img
 *.iso
 X86VAL.EXE
+X86VAL.LOG
 x86val
 x86val.exe
 
