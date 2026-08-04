@@ -184,6 +184,12 @@ print_fpu_name:
 %include "cpu/80286/real.asm"
 %include "cpu/80286/protected.asm"
 
+; --- 80386+ tests ---
+%include "cpu/80386/new_insns.asm"
+%include "cpu/80386/bitops.asm"
+%include "cpu/80386/shifts32.asm"
+%include "cpu/80386/arith32.asm"
+
 ; --- FPU 8087+ tests ---
 %include "fpu/8087/basic.asm"
 %include "fpu/8087/arith.asm"

@@ -179,6 +179,11 @@ test_module_table:
     ; 80286+
     dw real286_run, real286_init, real286_cleanup, real286_name
     dw pm286_run, pm286_init, pm286_cleanup, pm286_name
+    ; 80386+
+    dw i386_run, i386_init, i386_cleanup, i386_name
+    dw i386bit_run, i386bit_init, i386bit_cleanup, i386bit_name
+    dw i386shf_run, i386shf_init, i386shf_cleanup, i386shf_name
+    dw i386a32_run, i386a32_init, i386a32_cleanup, i386a32_name
     ; FPU 8087+
     dw fpu_basic_run, fpu_basic_init, fpu_basic_cleanup, fpu_basic_name
     dw fpu_arith_run, fpu_arith_init, fpu_arith_cleanup, fpu_arith_name
