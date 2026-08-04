@@ -193,6 +193,9 @@ print_fpu_name:
 %include "cpu/80386/addr32.asm"
 %include "cpu/80386/seg386.asm"
 
+; --- 80486+ tests ---
+%include "cpu/80486/new486.asm"
+
 ; --- FPU 8087+ tests ---
 %include "fpu/8087/basic.asm"
 %include "fpu/8087/arith.asm"
@@ -201,6 +204,9 @@ print_fpu_name:
 %include "fpu/8087/transc.asm"
 %include "fpu/8087/misc.asm"
 %include "fpu/8087/extra.asm"
+
+; --- FPU 80387+ tests ---
+%include "fpu/80387/new387.asm"
 
 ;============================================================================
 ; GLOBAL DATA

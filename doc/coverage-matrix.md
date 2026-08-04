@@ -397,16 +397,16 @@ enforcement on some steppings).
 
 | Area | Dim | Venue | Pri | Wave | Notes |
 |------|-----|:----:|:--:|:---:|-----------------|
-| 486 CPU detection | direct | G | 1 | 0 | 486 presence smoke |
-| 387 new insns / IEEE FPREM1 / FUCOM | see §4 | G,H | 2 | 1 | folded into FPU matrix |
-| 387 detection & init handshake | 386+387 vs 486 | G | 2 | 0 | |
-| 486 BSWAP | 32-bit; 16-bit undefined | G,H | 2 | 1 | pin actual 16-bit result (§8.1) |
-| 486 XADD/CMPXCHG | value×flag×LOCK | G,H | 1 | 1 | ZF/acc semantics (§8.1) |
+| 486 CPU detection | direct | G | 1 | 0 | 486 presence smoke. ✓ `src/cpu/80486/new486.asm` (capability gate + CPUID) |
+| 387 new insns / IEEE FPREM1 / FUCOM | see §4 | G,H | 2 | 1 | ✓ `src/fpu/80387/new387.asm` (15 sub-tests: FPREM1, FUCOM/FUCOMP/FUCOMPP, FSIN/FCOS/FSINCOS, 387 CW default) |
+| 387 detection & init handshake | 386+387 vs 486 | G | 2 | 0 | CW default test in new387. **Gap:** 287-vs-387 infinity test needs 287 HW |
+| 486 BSWAP | 32-bit; 16-bit undefined | G,H | 2 | 1 | ✓ `src/cpu/80486/new486.asm` (7 BSWAP tests). **Gap:** 16-bit undefined result needs golden vector |
+| 486 XADD/CMPXCHG | value×flag×LOCK | G,H | 1 | 1 | ✓ `src/cpu/80486/new486.asm` (8 tests: value+flags+LOCK variants) |
 | 486 INVD/WBINVD | effect | G⁺(RING0) | 3 | 1 | functional; timing →C |
 | 486 INVLPG | single-entry flush | G(RING0) | 2 | 1 | vs full flush |
 | 486 cache coherence (SMC) | write to cached code line | G⁺(RING0) | 1 | 3 | fetched-bytes result G; fill →C (§8.2) |
 | 486 #AC alignment | AM×AC×CPL3×misalign | G(RING0) | 2 | 1 | vector 17 (§8.3) |
-| 486 CPUID | ID-bit toggle, leaf 0/1 | G,H | 2 | 1 | absent on early 486; vendor varies (§8.4) |
+| 486 CPUID | ID-bit toggle, leaf 0/1 | G,H | 2 | 1 | ✓ `src/cpu/80486/new486.asm` (ID toggle, leaf 0 vendor, leaf 1 features) |
 | 486 cache enable CR0.CD/NW, PCD/PWT | timing band | G⁺(RING0) | 3 | 3 | band only; structure →C/T |
 
 ### 8.1 Hard cases — 486 new instructions

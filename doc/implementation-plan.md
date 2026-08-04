@@ -154,11 +154,11 @@ Master checklist for implementing the x86 Validation Suite.
 | 2 | TEST | Oracle | 1 | Compare DOS vs oracle | **Purpose:** DOS results must match Linux oracle | |
 | 3 | TEST | FPU-Detect | 1 | FNINIT + FNSTCW/FNSTSW | **Purpose:** detect FPU presence via control word | |
 | 3 | TEST | FPU-Detect | 2 | 287 vs 387 infinity test | **Purpose:** projective (287) vs affine (387) infinity | |
-| 3 | TEST | FPU-Gen | 1 | CW default per generation | **Purpose:** 8087/287=0x03FF, 387/486=0x037F. Spec: [x87/generations.md](specs/x87/generations.md) | |
+| 3 | TEST | FPU-Gen | 1 | CW default per generation | **Purpose:** 8087/287=0x03FF, 387/486=0x037F. Spec: [x87/generations.md](specs/x87/generations.md). `src/fpu/80387/new387.asm` test 1 | ✓ |
 | 3 | TEST | FPU-Gen | 1 | IC bit effectiveness | **Purpose:** 8087/287 use IC; 387+ ignore it | |
-| 3 | TEST | FPU-Gen | 2 | FSIN/FCOS availability | **Purpose:** #UD on 8087/287, works on 387+ | |
-| 3 | TEST | FPU-Gen | 2 | FPREM vs FPREM1 | **Purpose:** FPREM1 is 387+ only (IEEE remainder) | |
-| 3 | TEST | FPU-Gen | 2 | FUCOM availability | **Purpose:** FUCOM/FUCOMP/FUCOMPP 387+ only | |
+| 3 | TEST | FPU-Gen | 2 | FSIN/FCOS availability | **Purpose:** #UD on 8087/287, works on 387+. `src/fpu/80387/new387.asm` (capability gate + tests 9–12) | ✓ |
+| 3 | TEST | FPU-Gen | 2 | FPREM vs FPREM1 | **Purpose:** FPREM1 is 387+ only (IEEE remainder). `src/fpu/80387/new387.asm` tests 2–4, 13 | ✓ |
+| 3 | TEST | FPU-Gen | 2 | FUCOM availability | **Purpose:** FUCOM/FUCOMP/FUCOMPP 387+ only. `src/fpu/80387/new387.asm` tests 5–8, 14 | ✓ |
 | 3 | TEST | FPU-Gen | 2 | C1 round-up indicator | **Purpose:** 387+ sets C1 on round-up; undefined on 287 | |
 | 3 | TEST | FPU-Gen | 2 | Denormal handling | **Purpose:** 387+ full denormal; 8087/287 may flush | |
 | 3 | TEST | FPU-Gen | 2 | FSAVE format differences | **Purpose:** 94-byte (287) vs 108-byte (387+) | |
@@ -174,23 +174,23 @@ Master checklist for implementing the x86 Validation Suite.
 | 3 | TEST | FPU-Special | 2 | Denormals | **Purpose:** gradual underflow handling | |
 | 3 | TEST | FPU-Compare | 1 | FCOM/FCOMP/FCOMPP | **Purpose:** verify C0/C2/C3 condition codes | |
 | 3 | TEST | FPU-Compare | 1 | FTST/FXAM | **Purpose:** test against 0, classify operand | |
-| 3 | TEST | FPU-Compare | 1 | FUCOM (387+) | **Purpose:** unordered compare (no #IA on QNaN) | |
+| 3 | TEST | FPU-Compare | 1 | FUCOM (387+) | **Purpose:** unordered compare (no #IA on QNaN). `src/fpu/80387/new387.asm` tests 5–8, 14 | ✓ |
 | 3 | TEST | FPU-Stack | 1 | Stack overflow → #IS | **Purpose:** push to full stack raises invalid | |
 | 3 | TEST | FPU-Stack | 1 | Stack underflow → #IS | **Purpose:** pop empty stack raises invalid | |
 | 3 | TEST | FPU-Stack | 1 | FXCH with empty | **Purpose:** exchange with empty register | |
 | 3 | TEST | FPU-Stack | 2 | FINCSTP/FDECSTP | **Purpose:** rotate TOP without exception | |
 | 3 | TEST | FPU-Ctrl | 1 | FLDCW/FSTCW round-trip | **Purpose:** control word preserved | |
-| 3 | TEST | FPU-Ctrl | 1 | Default CW = 0x037F | **Purpose:** FNINIT sets known default | |
+| 3 | TEST | FPU-Ctrl | 1 | Default CW = 0x037F | **Purpose:** FNINIT sets known default. `src/fpu/80387/new387.asm` test 1 | ✓ |
 | 3 | TEST | FPU-Ctrl | 2 | FCLEX/FNCLEX | **Purpose:** clear exception flags | |
 | 3 | TEST | FPU-Exc | 1 | All 6 exception types | **Purpose:** IE/DE/ZE/OE/UE/PE triggers | |
 | 3 | TEST | FPU-Exc | 1 | Masked vs unmasked | **Purpose:** masked = default result, unmasked = #MF | |
 | 3 | TEST | FPU-Exc | 1 | Deferred #MF model | **Purpose:** exception on NEXT FPU/WAIT instruction | |
 | 3 | TEST | FPU-Save | 1 | FSAVE/FRSTOR round-trip | **Purpose:** full state preserved | |
 | 3 | TEST | FPU-Save | 1 | 14/28/94/108-byte formats | **Purpose:** format varies by mode (real/PM) and gen | |
-| 3 | TEST | FPU-Trans | 2 | FSIN/FCOS/FPTAN (387+) | **Purpose:** verify trig functions | |
-| 3 | TEST | FPU-Trans | 2 | Out-of-range (C2 flag) | **Purpose:** |arg| >= 2^63 sets C2 | |
+| 3 | TEST | FPU-Trans | 2 | FSIN/FCOS/FPTAN (387+) | **Purpose:** verify trig functions. `src/fpu/80387/new387.asm` tests 9–11, 15 | ✓ |
+| 3 | TEST | FPU-Trans | 2 | Out-of-range (C2 flag) | **Purpose:** |arg| >= 2^63 sets C2. `src/fpu/80387/new387.asm` test 12 | ✓ |
 | 3 | TEST | FPU-Trans | 2 | F2XM1/FYL2X/FPATAN | **Purpose:** exponential/log/atan | |
-| 3 | TEST | FPU-PREM | 2 | FPREM vs FPREM1 | **Purpose:** truncate (8087) vs IEEE round (387) | |
+| 3 | TEST | FPU-PREM | 2 | FPREM vs FPREM1 | **Purpose:** truncate (8087) vs IEEE round (387). `src/fpu/80387/new387.asm` tests 2–3 | ✓ |
 | 3 | TEST | FPU-PREM | 2 | Partial remainder C2 | **Purpose:** C2=1 means incomplete, iterate | |
 | 3 | TEST | FPU-Const | 3 | FLD1/FLDZ/FLDPI/FLDL2E exact 80-bit | **Purpose:** pin exact constant bit patterns. ORACLE: golden | |
 | 3 | TEST | FPU-Special | 2 | 80-bit pseudo-denormals / un-NaN / un-∞ | **Purpose:** 387 vs 486 unnormals differ; pin behavior. ORACLE: golden | |
@@ -302,19 +302,19 @@ Master checklist for implementing the x86 Validation Suite.
 | 5 | TEST | 386-Limit | 2 | Code segment EIP limit | **Purpose:** #GP when EIP exceeds CS limit | |
 | 5 | TEST | 386-Limit | 2 | Stack segment ESP limit | **Purpose:** #SS on PUSH beyond limit | |
 | 5 | TEST | 386-Limit | 2 | D/B bit interaction | **Purpose:** 16-bit vs 32-bit default operand/address | |
-| 6 | TEST | 486-New | 1 | BSWAP 32-bit | **Purpose:** byte swap EAX→EAX | |
+| 6 | TEST | 486-New | 1 | BSWAP 32-bit | **Purpose:** byte swap EAX→EAX. `src/cpu/80486/new486.asm` tests 1–5, 15 | ✓ |
 | 6 | TEST | 486-New | 1 | BSWAP 16-bit | **Purpose:** undefined, pin actual result | |
-| 6 | TEST | 486-New | 1 | XADD | **Purpose:** exchange and add, verify flags | |
-| 6 | TEST | 486-New | 1 | CMPXCHG | **Purpose:** ZF semantics, accumulator update | |
-| 6 | TEST | 486-New | 2 | LOCK variants | **Purpose:** LOCK XADD, LOCK CMPXCHG | |
+| 6 | TEST | 486-New | 1 | XADD | **Purpose:** exchange and add, verify flags. `src/cpu/80486/new486.asm` tests 6–9, 16 | ✓ |
+| 6 | TEST | 486-New | 1 | CMPXCHG | **Purpose:** ZF semantics, accumulator update. `src/cpu/80486/new486.asm` tests 10–13 | ✓ |
+| 6 | TEST | 486-New | 2 | LOCK variants | **Purpose:** LOCK XADD, LOCK CMPXCHG. `src/cpu/80486/new486.asm` tests 18–19 | ✓ |
 | 6 | TEST | 486-New | 2 | INVD/WBINVD | **Purpose:** cache invalidate (functional) | |
 | 6 | TEST | 486-New | 2 | INVLPG | **Purpose:** single TLB entry invalidate | |
 | 6 | TEST | 486-Cache | 1 | SMC coherence | **Purpose:** write to code line → fetches new bytes | |
 | 6 | TEST | 486-Cache | 2 | Cached vs uncached band | **Purpose:** timing ratio proves cache active | |
 | 6 | TEST | 486-Cache | 3 | CR0.CD/NW, PCD/PWT | **Purpose:** cache control bits | |
-| 6 | TEST | 486-CPUID | 2 | EFLAGS.ID toggle | **Purpose:** CPUID present if ID toggles | |
-| 6 | TEST | 486-CPUID | 2 | Leaf 0 vendor | **Purpose:** "GenuineIntel" or AMD/Cyrix | |
-| 6 | TEST | 486-CPUID | 2 | Leaf 1 family/model | **Purpose:** CPU identification | |
+| 6 | TEST | 486-CPUID | 2 | EFLAGS.ID toggle | **Purpose:** CPUID present if ID toggles. `src/cpu/80486/new486.asm` test 14 | ✓ |
+| 6 | TEST | 486-CPUID | 2 | Leaf 0 vendor | **Purpose:** "GenuineIntel" or AMD/Cyrix. `src/cpu/80486/new486.asm` test 14 | ✓ |
+| 6 | TEST | 486-CPUID | 2 | Leaf 1 family/model | **Purpose:** CPU identification. `src/cpu/80486/new486.asm` test 17 | ✓ |
 | 6 | TEST | 486-AC | 2 | CR0.AM + EFLAGS.AC | **Purpose:** enable alignment check | |
 | 6 | TEST | 486-AC | 2 | Misaligned word → #AC | **Purpose:** word at odd address faults | |
 | 6 | TEST | 486-AC | 2 | #AC ring 3 only | **Purpose:** ring 0 no fault, ring 3 faults | |

@@ -187,6 +187,8 @@ test_module_table:
     dw i386str_run, i386str_init, i386str_cleanup, i386str_name
     dw i386addr_run, i386addr_init, i386addr_cleanup, i386addr_name
     dw i386seg_run, i386seg_init, i386seg_cleanup, i386seg_name
+    ; 80486+
+    dw i486_run, i486_init, i486_cleanup, i486_name
     ; FPU 8087+
     dw fpu_basic_run, fpu_basic_init, fpu_basic_cleanup, fpu_basic_name
     dw fpu_arith_run, fpu_arith_init, fpu_arith_cleanup, fpu_arith_name
@@ -195,4 +197,6 @@ test_module_table:
     dw fpu_trans_run, fpu_trans_init, fpu_trans_cleanup, fpu_trans_name
     dw fpu_misc_run, fpu_misc_init, fpu_misc_cleanup, fpu_misc_name
     dw fpu_extra_run, fpu_extra_init, fpu_extra_cleanup, fpu_extra_name
+    ; FPU 80387+
+    dw fpu387_run, fpu387_init, fpu387_cleanup, fpu387_name
     dw 0                               ; end sentinel
